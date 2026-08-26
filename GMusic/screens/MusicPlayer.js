@@ -1,21 +1,28 @@
 import React, { useState } from 'react'
-import { StyleSheet, Text, View, FlatList, Image, useWindowDimensions } from 'react-native'
+import {
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View
+} from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { songs } from '../model/data';
 import colors from '../theme/colors';
 
 export default function MusicPlayer() {
-  const {width} = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const currentSong = songs[selectedIndex];
   const artworkSize = Math.min(width - 40, 380);
 
-  function handleMomemtumEnd(event) {
-    const offset = event.nativeEvent.contentOffSet.x;
+  function handleMomentumEnd(event) {
+    const offset = event.nativeEvent.contentOffset.x;
     const index = Math.round(offset / width);
-    selectedIndex(index);
+    setSelectedIndex(index);
   }
 
   function renderArtwork({ item }) {
@@ -23,8 +30,10 @@ export default function MusicPlayer() {
       <View style={[styles.artworkPage, { width }]}>
         <Image
           source={item.artwork}
-          style={[styles.artwork, {width: artworkSize, height: artworkSize}]}
-          />
+          style={[styles.artwork,
+          { width: artworkSize, height: artworkSize },
+          ]}
+        />
       </View>
     )
   }
@@ -33,11 +42,29 @@ export default function MusicPlayer() {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <Text style={styles.eyebrow}>TOCANDO AGORA</Text>
-        <Text style={styles.title}>GMusic</Text>
+        <Text style={styles.counter}>
+          {selectedIndex + 1} de {songs.length}
+        </Text>
         <Text style={styles.description}>
           Nosso player começa aqui
         </Text>
       </View>
+
+      <FlatList
+        data={songs}
+        horizontal
+        pagingEnabled
+        renderItem={renderArtwork}
+        keyExtractor={(item) => String(item.id)}
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={handleMomentumEnd}
+      />
+
+      <View style={styles.metada}>
+        <Text style={styles.songTitle}>{currentSong.title}</Text>
+        <Text style={styles.songArtist}>{currentSong.artist}</Text>
+      </View>
+
     </SafeAreaView>
   )
 }
@@ -46,6 +73,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  header: {
+    height: 70,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   content: {
     flex: 1,
@@ -59,6 +93,10 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 1.8
   },
+  counter: {
+    color: colors.textSecondary,
+    fontSize: 12,
+  },
   title: {
     marginTop: 8,
     color: colors.text,
@@ -68,5 +106,29 @@ const styles = StyleSheet.create({
   description: {
     marginTop: 10,
     color: colors.textSecondary,
+  },
+  artworkPage: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  artwork: {
+    borderRadius: 24,
+  },
+  metadata: {
+    minHeight: 110,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  songTitle: {
+    color: colors.text,
+    fontSize: 22,
+    fontWeight: '800',
+    textAlign: 'center'
+  },
+  songArtist: {
+    marginTop: 6,
+    color: colors.textSecondary,
+    fontSize: 14,
   }
 })
