@@ -1,23 +1,73 @@
-import React, { useState } from 'react'
+import { Ionicons } from '@expo/vector-icons/Ionicons';
+import React, { useState, useEffect, useMemo } from 'react'
+import { setAudioModeAsync, useAudioPlaylist, useAudioPlayistStatus } from 'expo-audio';
 import {
   FlatList,
   Image,
+  Pressable,
   StyleSheet,
   Text,
   useWindowDimensions,
   View
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { songs } from '../model/data';
 import colors from '../theme/colors';
+
+const audioSources = songs.map((song) => song.url);
 
 export default function MusicPlayer() {
   const { width } = useWindowDimensions();
   const [selectedIndex, setSelectedIndex] = useState(0);
 
+  const playistOptions = useMemo(
+    () => ({
+      sources: audioSources,
+      loop: 'none',
+      updateInterval: 250,
+    })
+  );
+
+  const playist = useAudioPlaylist(playistOptions);
+  const status = useAudioPlayistStatus(playist)
+
   const currentSong = songs[selectedIndex];
-  const artworkSize = Math.min(width - 40, 380);
+  const artworkSize = Math.min(width-40, 380);
+
+  useEffect(() =>{
+    setAudioModeAsync({
+      playsInSilentMode: true,
+      shouldPlayInBackground: false,
+      interruptionMode: 'doNotMix',
+    })
+  }, []);
+
+  useEffect(() => {
+    if (Number.isInteger(status.currentIndex)) {
+      setSelectedIndex(status.currentIndex);
+    }
+  }, [status.currentIndex]);
+
+  function selectSong(index) {
+    if (index < 0 || index >= songs.length || index === selectedIndex) {
+      return;
+    }
+
+    const shouldResume = status.playing;
+    selectedIndex(index);
+
+    if (shouldResume) {
+      playist.play;
+    }
+  }
+
+  function handlePlayPause() {
+    if (status.playing) {
+      playist.pause();
+    } else {
+      playist.play();
+    }
+  }
 
   function handleMomentumEnd(event) {
     const offset = event.nativeEvent.contentOffset.x;
@@ -40,17 +90,14 @@ export default function MusicPlayer() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
+      <View style={styles.header}>
         <Text style={styles.eyebrow}>TOCANDO AGORA</Text>
         <Text style={styles.counter}>
           {selectedIndex + 1} de {songs.length}
         </Text>
-        <Text style={styles.description}>
-          Nosso player começa aqui
-        </Text>
       </View>
 
-      <FlatList
+      <FlatList 
         data={songs}
         horizontal
         pagingEnabled
@@ -60,11 +107,10 @@ export default function MusicPlayer() {
         onMomentumScrollEnd={handleMomentumEnd}
       />
 
-      <View style={styles.metada}>
+      <View style={styles.metadata}>
         <Text style={styles.songTitle}>{currentSong.title}</Text>
         <Text style={styles.songArtist}>{currentSong.artist}</Text>
       </View>
-
     </SafeAreaView>
   )
 }
