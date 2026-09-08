@@ -1,6 +1,10 @@
-import { Ionicons } from '@expo/vector-icons/Ionicons';
-import React, { useState, useEffect, useMemo } from 'react'
-import { setAudioModeAsync, useAudioPlaylist, useAudioPlayistStatus } from 'expo-audio';
+import React, { use, useEffect, useMemo, useState } from 'react'
+import Ionicons from '@expo/vector-icons/Ionicons';
+import {
+  setAudioModeAsync,
+  useAudioPlaylist,
+  useAudioPlaylistStatus,
+} from 'expo-audio';
 import {
   FlatList,
   Image,
@@ -17,10 +21,10 @@ import colors from '../theme/colors';
 const audioSources = songs.map((song) => song.url);
 
 export default function MusicPlayer() {
-  const { width } = useWindowDimensions();
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const { width, height } = useWindowDimensions();
+  const listRef = useRef(null);
 
-  const playistOptions = useMemo(
+  const playlistOptions = useMemo(
     () => ({
       sources: audioSources,
       loop: 'none',
@@ -28,13 +32,23 @@ export default function MusicPlayer() {
     })
   );
 
-  const playist = useAudioPlaylist(playistOptions);
-  const status = useAudioPlayistStatus(playist)
+  const playlist = useAudioPlaylist(playlistOptions);
+  const status = useAudioPlaylistStatus(playlist);
+
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [favoriteIds, setFavoriteIds] = useState(() => new Set());
+  const [repeatOne, setRepeatOne] = useState(false);
+  const [isSeeking, setIsSeeking] = useState(false);
+  const [seekPosition, setSeekPosition] = useState(0);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const currentSong = songs[selectedIndex];
-  const artworkSize = Math.min(width-40, 380);
+  const isFavorite = favoriteIds.has(currentSong.Id);
+  const isCompact = height < 700;
+  const artworkSize = Math.min(Math.max(width - 40, 240), 460);
+  const artworkSize = Math.min()
 
-  useEffect(() =>{
+  useEffect(() => {
     setAudioModeAsync({
       playsInSilentMode: true,
       shouldPlayInBackground: false,
@@ -48,31 +62,36 @@ export default function MusicPlayer() {
     }
   }, [status.currentIndex]);
 
+  useEffect(() => {
+    playlist.loop = repeatOne ? 'single' : 'none';
+  }, [playlist, repeatOne]);
+
   function selectSong(index) {
     if (index < 0 || index >= songs.length || index === selectedIndex) {
       return;
     }
 
     const shouldResume = status.playing;
-    selectedIndex(index);
+    setSelectedIndex(index);
+    playlist.skipTo(index);
 
     if (shouldResume) {
-      playist.play;
+      playlist.play;
     }
   }
 
   function handlePlayPause() {
     if (status.playing) {
-      playist.pause();
+      playlist.pause();
     } else {
-      playist.play();
+      playlist.play();
     }
   }
 
   function handleMomentumEnd(event) {
     const offset = event.nativeEvent.contentOffset.x;
     const index = Math.round(offset / width);
-    setSelectedIndex(index);
+    selectSong(index);
   }
 
   function renderArtwork({ item }) {
@@ -97,7 +116,7 @@ export default function MusicPlayer() {
         </Text>
       </View>
 
-      <FlatList 
+      <FlatList
         data={songs}
         horizontal
         pagingEnabled
