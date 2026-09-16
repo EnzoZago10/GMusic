@@ -1,13 +1,13 @@
-import React from "react";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { StyleSheet, ActivityIndicator, Pressable } from "react-native";
+import React from 'react'
+import Ionicons from '@expo/vector-icons/Ionicons'
+import { StyleSheet, ActivityIndicator, Pressable } from 'react-native'
 
-import colors from "../theme/colors";
+import colors from '../theme/colors'
 
 const VARIANTS = {
   ghost: {
-    backgroundColor: "transparent",
-    borderColor: "transparent",
+    backgroundColor: 'transparent',
+    borderColor: 'transparent',
     iconColor: colors.text,
   },
   surface: {
@@ -19,8 +19,8 @@ const VARIANTS = {
     backgroundColor: colors.primary,
     borderColor: colors.primary,
     iconColor: colors.background,
-  },
-};
+  }
+}
 
 export default function IconButton({
   accessibilityLabel,
@@ -31,7 +31,7 @@ export default function IconButton({
   loading = false,
   onPress,
   size = 48,
-  variant = "ghost",
+  variant = 'ghost',
 }) {
   const selectedVariant = VARIANTS[variant] ?? VARIANTS.ghost;
   const iconColor = active ? colors.primary : selectedVariant.iconColor;
@@ -39,7 +39,7 @@ export default function IconButton({
   return (
     <Pressable
       accessibilityLabel={accessibilityLabel}
-      accessibilityRole="button"
+      accessibilityRole='button'
       accessibilityState={{ disabled, selected: active }}
       disabled={disabled || loading}
       hitSlop={10}
@@ -54,7 +54,7 @@ export default function IconButton({
           borderColor: active ? colors.primary : selectedVariant.borderColor,
           opacity: disabled ? 0.42 : pressed ? 0.72 : 1,
           transform: [{ scale: pressed ? 0.96 : 1 }],
-        },
+        }
       ]}
     >
       {loading ? (
@@ -63,7 +63,13 @@ export default function IconButton({
         <Ionicons name={icon} size={iconSize} color={iconColor} />
       )}
     </Pressable>
-  );
+  )
 }
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  button: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,  
+  }
+})
