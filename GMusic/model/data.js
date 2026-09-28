@@ -50,7 +50,7 @@ const songs = [
   },
   {
     id: 8,
-    title: "Sobral o Patriota",
+    title: "Sobral, O Patriota 🇧🇷",
     artist: "Zago & Isaque",
     artwork: require("../assets/img/sobral.png"),
     url: require("../assets/audio/sobral.mp3"),
